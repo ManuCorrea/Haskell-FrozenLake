@@ -1,29 +1,18 @@
-# README #
+# TRABAJO PD
 
-This README would normally document whatever steps are necessary to get your application up and running.
+## Trabajo en entorno local
 
-### What is this repository for? ###
+### Prerequisitos
+Para crear el repositorio es necesario hacer clone del repositorio del proyecto, alojado en
+https://alejandro_jimenez_martin@bitbucket.org/alejandro_jimenez_martin/trabajo_pd.git
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+### Observaciones
+Usaremos la platilla Principal.hs para la creación y desarrollo de los métodos principales del trabajo.
 
-### How do I get set up? ###
+Si necesitaramos crear nuevo ficheros para métodos secundarios o para librerias, módulos,etc; podremos 
+crearlos con toda libertad, previo acuerdo con el compañero para evitar confilctos a la hora de actualizar 
+el repositorio.
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+Si se necesita crear directorios de carpetas dentro del proyecto para ubicar dichos ficheros mencionandos
+anteriormente, podemos hacerlo libremente pero siempre acordandolo con el compañero, para evitar conflictos
+a la hora de actualizar el repositorio.
