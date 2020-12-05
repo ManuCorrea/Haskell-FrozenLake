@@ -1,9 +1,18 @@
--- Trabajo Finanl Programación Declarativa.
+-- Trabajo Final Programación Declarativa.
 
 -- Desarrollado por los alumnos:
--- Manuel Apellido1 Apellido2
+-- Manuel Correa
 -- Alejandro Jiménez Martín
 
 -- Departamento de Ciencias de la Computación e I.A.
 -- Universidad de Sevilla
 -- =====================================================================
+
+import Test.QuickCheck
+import Data.Char
+import Data.List
+import Data.Maybe 
+import System.IO 
+import System.Environment (getArgs)
+import Text.Printf
+
