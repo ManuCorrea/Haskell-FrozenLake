@@ -48,4 +48,15 @@ a la hora de actualizar el repositorio.
 
 
 ## Bibliografía
+Librería gym python:
 https://gym.openai.com/
+
+Teoría de matrices:
+http://hackage.haskell.org/package/matrix-0.3.4.3/docs/Data-Matrix.html
+http://www.cs.us.es/~jalonso/cursos/i1m/doc/manual-Data.Matrix.html
+
+Juego FrozenLake:
+https://github.com/openai/gym/blob/master/gym/envs/toy_text/frozen_lake.py
+
+Ejercicios de haskell:
+https://www.cs.us.es/~jalonso/cursos/i1m-10/ejercicios/ej_prog_Haskell.pdf
