@@ -45,7 +45,14 @@ iniciaTabler n = matrix nX nX (\(i, j) -> if (i==1 && j==1) then 'S'
                                          else if (i == nX && j == nX) then 'M'
                                          else  'H')
                                          where
-                                            nX = fromIntegral n                                         
+                                            nX = fromIntegral n  
+
+iniciaTablerRandom n = matrix nX nX (\(i, j) -> if (i==1 && j==1) then 'S'
+                                         else if (i == nX && j == nX) then 'M'
+                                         else 
+                                            if (0.5 > 0.8) then 'H' else 'A')
+                                         where
+                                            nX = fromIntegral n                                                                     
 
 --iteraDirecciones :: (Num a, Ord a, Num b, Num c, Num d) => Tablero -> [(a, a)] -> [(b, b)] -> c -> c -> [(d, d)]
 
@@ -56,7 +63,7 @@ iteraDirecciones _ frontera [] _ _ = frontera ++ [(-2,-2)]
 
 iteraDirecciones tablero frontera (dir:directionss) r c
     | fueraTablero = iteraDirecciones tablero frontera directionss r c
-    | tablero!(r_new, c_new) == 'M' = [(-1, -1)] --return True
+    | tablero!(r_new, c_new) == 'M' = [(-1, -1)] --return True Mapa Valido
     | tablero!(r_new, c_new) /= 'A'= iteraDirecciones tablero (frontera ++ [(r_new, c_new)]) directionss r c --frontier.append((r_new, c_new))
     | otherwise = iteraDirecciones tablero frontera directionss r c
         where
@@ -78,13 +85,13 @@ tableroValidoAux tablero [] [] = tableroValidoAux tablero [(0, 0)] []
 tableroValidoAux tablero frontera descubiertos
     | (length frontera > 0) = explore
     | (length frontera == 0) = False
-        where explore -- w hile en linea 46
-            | !(fronteraPop `elem` descubiertos) = do -- si encuentra True dentro
-                                                      -- se devuelve True
-                                                         -- hay que hacer el if y el for
-            | otherwise = do
-                            fronteraPop
-                            tableroValidoAux tablero frontera descubiertos
+        where explore -- while en linea 46
+            | !(fronteraPop `elem` descubiertos) =
+                iteraDirecciones tablero frontera directions (descubiertos++ [fronteraPop]) -- for
+                -- vuelve a hacer el bucle
+                tableroValidoAux tablero frontera directions descubiertos
+            | otherwise =  False
+            where fronteraPop = (1,1)
 
 
 tableroValido :: Tablero -> Bool
