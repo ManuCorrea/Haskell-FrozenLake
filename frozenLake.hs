@@ -56,7 +56,8 @@ iniciaTablerRandom n = matrix nX nX (\(i, j) -> if (i==1 && j==1) then 'S'
 
 --iteraDirecciones :: (Num a, Ord a, Num b, Num c, Num d) => Tablero -> [(a, a)] -> [(b, b)] -> c -> c -> [(d, d)]
 
-tb = iniciaTabler 5 -- para realizar tests
+nFilasColumnas = 5
+tb = iniciaTabler nFilasColumnas -- para realizar tests
 directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 iteraDirecciones _ frontera [] _ _ = frontera ++ [(-2,-2)]
@@ -97,3 +98,42 @@ tableroValidoAux tablero frontera descubiertos
 tableroValido :: Tablero -> Bool
 tableroValido tablero = 
 -}
+
+state = (1, 1) -- we start in 'S'
+{-
+0 LEFT
+1 DOWN
+2 RIGHT
+3 UP
+-}
+
+observation = undefined
+-- +1 si llegamos a la meta, 0 en caso contrario
+reward (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then 1.0 else 0
+-- si llegamos a la meta hemos terminado con el entorno
+done (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then True else False
+
+
+-- FIXME error de tipos o hacer funcion a parte para comprobar si es válido
+{-
+move action (fila, columna)
+    | action == 0 = (fila, leftCol)
+    | action == 1 = (downFil, columna)
+    | action == 2 = (fila, min(columna+1 nFilasColumnas))
+    | action == 3 = (max((fila-1) 1), columna)
+    | otherwise = (fila, columna)
+    where
+        leftCol = max(columna-1 1)
+        downFil = min(fila+1 nFilasColumnas)
+-}
+-- no es seguro
+move' action (fila, columna)
+    | action == 0 = (fila, columna-1)
+    | action == 1 = (fila+1, columna)
+    | action == 2 = (fila, columna+1)
+    | action == 3 = (fila-1, columna)
+    | otherwise = (fila, columna)
+
+-- retorna info del entorno observation, reward, done, info
+step action = undefined
+
