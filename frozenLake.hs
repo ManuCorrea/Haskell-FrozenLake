@@ -24,40 +24,20 @@ En la cuadrícula vamos a tener:
 type Tablero = Matrix Char
 getRandomNum = randomRIO (0, 1) :: IO Float -- usar asignando num <- getRandomNum
 
--- Genera un tablero base con una salida y una meta
--- TODO generar
+obtenerNumAleatorio idx n = take n $ drop (idx*n) (randoms (mkStdGen 11) :: [Float])
 
-randoms' :: (RandomGen g, Random a) => g -> [a]
-randoms' gen = let (value, newGen) = random gen in value:randoms' newGen
+esValido a = True
 
---take 5 $ randoms (mkStdGen 11) :: [Float]
-
--- TODO que se creen H o A de forma aleatoria
-iniciaTablero :: (Num a) => a -> Tablero
-iniciaTablero n = matrix n n (\(i, j) -> if (i==1 && j==1) then 'S'
-                                         else if (i == n && j == n) then 'M'
-                                         else  'H')
-                                         where
-                                            n = (fromIntegral n)
-
-iniciaTabler :: (Num a, Integral a) => a -> Tablero
-iniciaTabler n = matrix nX nX (\(i, j) -> if (i==1 && j==1) then 'S'
-                                         else if (i == nX && j == nX) then 'M'
-                                         else  'H')
-                                         where
-                                            nX = fromIntegral n  
-
-iniciaTablerRandom n = matrix nX nX (\(i, j) -> if (i==1 && j==1) then 'S'
-                                         else if (i == nX && j == nX) then 'M'
-                                         else 
-                                            if (0.5 > 0.8) then 'H' else 'A')
-                                         where
-                                            nX = fromIntegral n                                                                     
+iniciaTablero n idx = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.8) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio idx (n*n))]
+-- [if (x>0.8) then 'h' else 'a' | x <-obtenerNumAleatorio 151 8]
+crearTablero n idx
+    | esValido (iniciaTablero n idx) = crearTablero n idx
+    | otherwise = crearTablero n idx+1
 
 --iteraDirecciones :: (Num a, Ord a, Num b, Num c, Num d) => Tablero -> [(a, a)] -> [(b, b)] -> c -> c -> [(d, d)]
 
 nFilasColumnas = 5
-tb = iniciaTabler nFilasColumnas -- para realizar tests
+tb = iniciaTablero nFilasColumnas 0 -- para realizar tests
 directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 iteraDirecciones _ frontera [] _ _ = frontera ++ [(-2,-2)]
@@ -93,7 +73,6 @@ tableroValidoAux tablero frontera descubiertos
                 tableroValidoAux tablero frontera directions descubiertos
             | otherwise =  False
             where fronteraPop = (1,1)
-
 
 tableroValido :: Tablero -> Bool
 tableroValido tablero = 
