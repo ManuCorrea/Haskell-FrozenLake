@@ -1,6 +1,6 @@
-import Data.Array as A
+import Data.Array as A hiding ((!))
 import Data.Matrix as M
-import Data.Vector as V
+import Data.List
 
 import System.Random
 
@@ -21,35 +21,38 @@ En la cuadrícula vamos a tener:
     Se termina cuando el agente alcanza M.
 -}
 
-type Estado = (Double, Double)
-
-type Posicion = (Int, Int)
-
 type Tablero = Matrix Char
 getRandomNum = randomRIO (0, 1) :: IO Float -- usar asignando num <- getRandomNum
 
+obtenerNumAleatorio idx n = take n $ drop (idx*n) (randoms (mkStdGen 11) :: [Float])
 
-iniciaTablero :: Int -> Tablero
-iniciaTablero n = matrix n n $ \(i, j) -> if (i==1 && j==1) then 'S'
-                                          else if (i == n && j == n) then 'M'
-                                          else 'H'
-
+iniciaTablero :: Int -> Int -> Tablero
+iniciaTablero n idx = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.8) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio idx (n*n))]
 
 
 -- Calculamos el porcentaje estableciendo siempre el 20%
 porcentaje n = fromIntegral $ round ((x*20)/100) 
     where x = n*n 
 
+
 -- Método que calcula si es frontera, por lo que toda posición que sea frontera o "A", no se podrá pasar
-esFrontera :: Posicion -> Bool
-esFrontera p = undefined
-    
+esFrontera m = nub [(i,j) | i <- [1..numF], j <- [1..numC], i==1 || j==1] ++ [(i,j) | i <- [1..numF], j <- [1..numC], i==numF || j==numC]
+    where numF = nrows m
+          numC = ncols m 
+
+esFrontera2 m = [(i,j) | ((i,j),_) <- indexs m, i==1 || j==1] ++ [(i,j) | ((i,j),_) <- indexs m, i==numF || j==numC]
+    where numF = nrows m
+          numC = ncols m 
+
+indexs m = [ ((i,j), m!(i,j)) | i <- [1..numF], j <- [1..numC]]
+    where numF = nrows m
+          numC = ncols m 
 
 
 
 -- inicio :: Estado
 -- inicio :: Posicion
--- inicio = (0, 0)
+-- inicio = (1,1)
 
 -- movimiento :: Event -> Estado -> Estado
 -- movimiento (KeyPress "Right") (x, y) = (x+1, y)
