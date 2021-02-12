@@ -44,19 +44,20 @@ iteraDirecciones _ frontera [] _ _ = frontera ++ [(-2,-2)]
 
 iteraDirecciones tablero frontera (dir:directionss) r c
     | fueraTablero = iteraDirecciones tablero frontera directionss r c
-    | tablero!(r_new, c_new) == 'M' = [(-1, -1)] --return True Mapa Valido
-    | tablero!(r_new, c_new) /= 'A'= iteraDirecciones tablero (frontera ++ [(r_new, c_new)]) directionss r c --frontier.append((r_new, c_new))
+    | tablero!tuplaPosicion == 'M' = [(-1, -1)] --return True Mapa Valido
+    | tablero!tuplaPosicion /= 'A'= iteraDirecciones tablero (frontera ++ [tuplaPosicion]) directionss r c --frontier.append((r_new, c_new))
     | otherwise = iteraDirecciones tablero frontera directionss r c
         where
             r_new = fromIntegral(r + fst dir)
             c_new = fromIntegral(c + snd dir)
-            r_newC = fromIntegral(r + fst dir)
-            c_newC = fromIntegral(c + snd dir)
+            tuplaPosicion = (r_new, c_new)
+            r_newComparar = fromIntegral(r + fst dir)
+            c_newComparar = fromIntegral(c + snd dir)
             size = nrows tablero
-            fueraTablero = r_newC < 1 ||
-                 r_newC >= size ||
-                 c_newC < 1 ||
-                 c_newC >= size
+            fueraTablero = r_newComparar < 1 ||
+                 r_newComparar >= size ||
+                 c_newComparar < 1 ||
+                 c_newComparar >= size
 --iteraDirecciones tb [(1,1)] directions 2 1 da [(1,1),(1,1),(-2,-2)]
 
 {-
