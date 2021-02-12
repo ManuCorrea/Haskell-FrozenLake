@@ -51,7 +51,7 @@ iteraDirecciones tablero casillasPosibles (dir:directionss) r c
         where
             r_new = fromIntegral(r + fst dir)
             c_new = fromIntegral(c + snd dir)
-            tuplaPosicion = (r_new, c_new) -- TODO pasar a Int
+            tuplaPosicion = (r_new, c_new)
             r_newComparar = fromIntegral(r + fst dir)
             c_newComparar = fromIntegral(c + snd dir)
             size = nrows tablero
