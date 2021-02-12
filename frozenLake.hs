@@ -41,11 +41,11 @@ tb = iniciaTablero nFilasColumnas 0 -- para realizar tests
 
 
 -- hemos terminado el for sobre direcciones
-iteraDirecciones _ casillasPosibles [] _ _ = [(-2,-2)] --
+iteraDirecciones _ casillasPosibles [] _ _ = casillasPosibles --
 
 iteraDirecciones tablero casillasPosibles (dir:directionss) r c
     | fueraTablero = iteraDirecciones tablero casillasPosibles directionss r c
-    | tablero!(r_new, c_new) == 'M' = [(-1, -1)] --return True Mapa Valido
+    | tablero!(r_new, c_new) == 'M' = apila (-1, -1) casillasPosibles --return True Mapa Valido
     | tablero!tuplaPosicion /= 'A'= iteraDirecciones tablero (apila tuplaPosicion casillasPosibles) directionss r c --frontier.append((r_new, c_new))
     | otherwise = iteraDirecciones tablero casillasPosibles directionss r c
         where
@@ -65,17 +65,18 @@ directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 --tableroValidoAux :: Tablero -> [(Int, Int)] -> [(Int, Int)] -> Bool
 
-{-
+
 tableroValidoAux tablero casillasPosibles descubiertos
     | esVacia casillasPosibles = False
     | pertenecePila (-1, -1) casillasPosibles = True
-    | otherwise = explore
+    | not ((cima casillasPosibles) `elem` descubiertos) = tableroValidoAux
+                    tablero (iteraDirecciones tablero (desapila casillasPosibles) directions row column) (descubiertos++[(cima casillasPosibles)]) -- for
+
+    | otherwise = tableroValidoAux tablero (desapila casillasPosibles) descubiertos
     where
-        explore -- while en linea 46
-            | not (cima casillasPosibles) `elem` descubiertos = -- if not (r, c) in discovered:
-                tableroValidoAux tablero (iteraDirecciones tablero (desapila casillasPosibles) directions 1 0) descubiertos -- for
-            | otherwise =  False
--}
+        row = fst (cima casillasPosibles)
+        column = snd (cima casillasPosibles)
+            
 
 pertenecePila :: (Eq a) => a -> Pila a -> Bool
 pertenecePila y pila
@@ -85,11 +86,11 @@ pertenecePila y pila
           d = desapila pila
 
 
--- tableroValido :: Tablero -> Bool
---                         --              tablero   posibles   descubiertos
--- tableroValido tablero = tableroValidoAux tablero pilaInicial []
---     where
---         pilaInicial = apila (1,1) vacia
+tableroValido :: Tablero -> Bool
+                        --              tablero   posibles   descubiertos
+tableroValido tablero = tableroValidoAux tablero pilaInicial []
+    where
+        pilaInicial = apila (1,1) vacia
 
 state = (1, 1) -- we start in 'S'
 {-
