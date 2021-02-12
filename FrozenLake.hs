@@ -1,3 +1,6 @@
+module FrozenLake
+(iniciaEntorno, step, muestra) where
+
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
 --import Data.Vector as V
@@ -93,12 +96,7 @@ tableroValido tablero = tableroValidoAux tablero pilaInicial []
         pilaInicial = apila (1,1) vacia
 
 state = (1, 1) -- we start in 'S'
-{-
-0 LEFT
-1 DOWN
-2 RIGHT
-3 UP
--}
+
 
 observation = undefined
 -- +1 si llegamos a la meta, 0 en caso contrario
@@ -108,25 +106,39 @@ done (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then True else F
 
 
 -- FIXME error de tipos o hacer funcion a parte para comprobar si es válido
+
+-- move action (fila, columna)
+--     | action == 0 = (fila, leftCol)
+--     | action == 1 = (downFil, columna)
+--     | action == 2 = (fila, min(columna+1 nFilasColumnas))
+--     | action == 3 = (max((fila-1) 1), columna)
+--     | otherwise = (fila, columna)
+--     where
+--         leftCol = max(columna-1 1)
+--         downFil = min(fila+1 nFilasColumnas)
+
 {-
-move action (fila, columna)
-    | action == 0 = (fila, leftCol)
-    | action == 1 = (downFil, columna)
-    | action == 2 = (fila, min(columna+1 nFilasColumnas))
-    | action == 3 = (max((fila-1) 1), columna)
-    | otherwise = (fila, columna)
-    where
-        leftCol = max(columna-1 1)
-        downFil = min(fila+1 nFilasColumnas)
+0 LEFT
+1 DOWN
+2 RIGHT
+3 UP
 -}
+
 -- no es seguro
-move' action (fila, columna)
-    | action == 0 = (fila, columna-1)
-    | action == 1 = (fila+1, columna)
-    | action == 2 = (fila, columna+1)
-    | action == 3 = (fila-1, columna)
-    | otherwise = (fila, columna)
+-- move 0 (n, 1) = (n, 1)
+-- -- move 1 (nFilasColumnas, n) = (nFilasColumnas, n)
+-- -- move 2 (n, nFilasColumnas) = (n, nFilasColumnas)
+-- move 3 (1, n) = (1, n)
+move action (fila, columna) = case action of
+    0 -> (fila, columna-1)
+    1 -> (fila+1, columna)
+    2 -> (fila, columna+1)
+    3 -> (fila-1, columna)
+    _ -> (fila, columna)
+
 
 -- retorna info del entorno observation, reward, done, info
-step action = undefined
+step action =  undefined
+iniciaEntorno n = undefined
+muestra = undefined
 
