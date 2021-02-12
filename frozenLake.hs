@@ -38,46 +38,58 @@ crearTablero n idx
 
 nFilasColumnas = 5
 tb = iniciaTablero nFilasColumnas 0 -- para realizar tests
-directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-iteraDirecciones _ frontera [] _ _ = frontera ++ [(-2,-2)]
 
-iteraDirecciones tablero frontera (dir:directionss) r c
-    | fueraTablero = iteraDirecciones tablero frontera directionss r c
-    | tablero!tuplaPosicion == 'M' = [(-1, -1)] --return True Mapa Valido
-    | tablero!tuplaPosicion /= 'A'= iteraDirecciones tablero (frontera ++ [tuplaPosicion]) directionss r c --frontier.append((r_new, c_new))
-    | otherwise = iteraDirecciones tablero frontera directionss r c
+-- hemos terminado el for sobre direcciones
+iteraDirecciones _ casillasPosibles [] _ _ = [(-2,-2)] --
+
+iteraDirecciones tablero casillasPosibles (dir:directionss) r c
+    | fueraTablero = iteraDirecciones tablero casillasPosibles directionss r c
+    | tablero!(r_new, c_new) == 'M' = [(-1, -1)] --return True Mapa Valido
+    | tablero!tuplaPosicion /= 'A'= iteraDirecciones tablero (apila tuplaPosicion casillasPosibles) directionss r c --frontier.append((r_new, c_new))
+    | otherwise = iteraDirecciones tablero casillasPosibles directionss r c
         where
             r_new = fromIntegral(r + fst dir)
             c_new = fromIntegral(c + snd dir)
-            tuplaPosicion = (r_new, c_new)
+            tuplaPosicion = (r_new, c_new) -- TODO pasar a Int
             r_newComparar = fromIntegral(r + fst dir)
             c_newComparar = fromIntegral(c + snd dir)
             size = nrows tablero
             fueraTablero = r_newComparar < 1 ||
-                 r_newComparar >= size ||
+                 r_newComparar > size ||
                  c_newComparar < 1 ||
-                 c_newComparar >= size
+                 c_newComparar > size
 --iteraDirecciones tb [(1,1)] directions 2 1 da [(1,1),(1,1),(-2,-2)]
 
+directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+
+--tableroValidoAux :: Tablero -> [(Int, Int)] -> [(Int, Int)] -> Bool
+
 {-
-tableroValidoAux :: Tablero -> [(Int, Int)] -> [(Int, Int)] -> Bool
-tableroValidoAux tablero [] [] = tableroValidoAux tablero [(0, 0)] []
-
-tableroValidoAux tablero frontera descubiertos
-    | (length frontera > 0) = explore
-    | (length frontera == 0) = False
-        where explore -- while en linea 46
-            | !(fronteraPop `elem` descubiertos) =
-                iteraDirecciones tablero frontera directions (descubiertos++ [fronteraPop]) -- for
-                -- vuelve a hacer el bucle
-                tableroValidoAux tablero frontera directions descubiertos
+tableroValidoAux tablero casillasPosibles descubiertos
+    | esVacia casillasPosibles = False
+    | pertenecePila (-1, -1) casillasPosibles = True
+    | otherwise = explore
+    where
+        explore -- while en linea 46
+            | not (cima casillasPosibles) `elem` descubiertos = -- if not (r, c) in discovered:
+                tableroValidoAux tablero (iteraDirecciones tablero (desapila casillasPosibles) directions 1 0) descubiertos -- for
             | otherwise =  False
-            where fronteraPop = (1,1)
-
-tableroValido :: Tablero -> Bool
-tableroValido tablero = 
 -}
+
+pertenecePila :: (Eq a) => a -> Pila a -> Bool
+pertenecePila y pila
+    | esVacia pila = False
+    | otherwise = y == c || (pertenecePila y d)
+    where c = cima pila
+          d = desapila pila
+
+
+-- tableroValido :: Tablero -> Bool
+--                         --              tablero   posibles   descubiertos
+-- tableroValido tablero = tableroValidoAux tablero pilaInicial []
+--     where
+--         pilaInicial = apila (1,1) vacia
 
 state = (1, 1) -- we start in 'S'
 {-
