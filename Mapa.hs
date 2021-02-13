@@ -3,7 +3,6 @@ module Mapa (
     crearTablero,
     iniciaTablero,
     iteraDirecciones,
-    --direcciones,
     tableroValido,
     move
 ) where 
@@ -74,6 +73,7 @@ move action (tb, (i, j)) = case action of
     1 -> (min (i+1) size, j)
     2 -> (i, min (j+1) size)
     3 -> (i-1, j)
+    _ -> (i,j)
     where size = nrows tb 
 
 {-
