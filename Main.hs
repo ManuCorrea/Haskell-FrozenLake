@@ -8,11 +8,8 @@
 -- Universidad de Sevilla
 -- =====================================================================
 
-import Test.QuickCheck
-import Data.Char
-import Data.List
-import Data.Maybe 
-import System.IO 
-import System.Environment (getArgs)
-import Text.Printf
+import Mapa
+
+
+
 
