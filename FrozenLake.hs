@@ -35,18 +35,12 @@ obtenerNumAleatorio idx n = take n $ drop (idx*n) (randoms (mkStdGen 11) :: [Flo
 iniciaTablero :: Int -> Int -> Tablero
 iniciaTablero n idx = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.3) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio idx (n*n))]
 
---crearTablero :: Int -> Int -> Tablero
+crearTablero :: Int -> Int -> Tablero
 crearTablero n idx
     | tableroValido (iniciaTablero n idx) = iniciaTablero n idx
     | otherwise = crearTablero n (idx+1)
 
---iteraDirecciones :: (Num a, Ord a, Num b, Num c, Num d) => Tablero -> [(a, a)] -> [(b, b)] -> c -> c -> [(d, d)]
-
-nFilasColumnas = 5
-tb = iniciaTablero nFilasColumnas 0 -- para realizar tests
-
--- iteraDirecciones :: (Integral a) => Matrix Char
---     -> Pila (Int, Int) -> [(a, a)] -> a -> a -> Pila (Int, Int)
+iteraDirecciones :: Tablero -> Pila (Int, Int) -> [(Int, Int)] -> (Int, Int) -> Pila (Int, Int)
 -- hemos terminado el for sobre direcciones
 iteraDirecciones _ casillasPosibles [] _ = casillasPosibles --
 
@@ -62,12 +56,10 @@ iteraDirecciones tablero casillasPosibles (dir:directionss) posActual
                  (fst newPos) > size ||
                  (snd newPos) < 1 ||
                  (snd newPos) > size
---iteraDirecciones tb [(1,1)] directions 2 1 da [(1,1),(1,1),(-2,-2)]
 
 directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 tableroValidoAux :: Tablero -> Pila Posicion -> [Posicion] -> Bool
-
 tableroValidoAux tablero casillasPosibles descubiertos
     | esVacia casillasPosibles = False
     | pertenecePila (-1, -1) casillasPosibles = True
@@ -96,36 +88,27 @@ tableroValido tablero = tableroValidoAux tablero pilaInicial []
 
 observation = undefined
 -- +1 si llegamos a la meta, 0 en caso contrario
-reward (x, y) = case meta of
+
+reward :: Entorno -> Float
+reward (tb, (x, y)) = case meta of
     'M' -> 1.0
     _ -> 0
     where meta = tb!(fromIntegral(x), fromIntegral(y))
 -- si llegamos a la meta hemos terminado con el entorno
-done (x, y) = case meta of
+done :: Entorno -> Bool
+done (tb, (x, y)) = case meta of
     'M' -> True
     _ -> False
     where meta = tb!(fromIntegral(x), fromIntegral(y))
 
--- FIXME error de tipos o hacer funcion a parte para comprobar si es válido
-
--- move action (fila, columna)
---     | action == 0 = (fila, leftCol)
---     | action == 1 = (downFil, columna)
---     | action == 2 = (fila, min(columna+1 nFilasColumnas))
---     | action == 3 = (max((fila-1) 1), columna)
---     | otherwise = (fila, columna)
---     where
---         leftCol = max(columna-1 1)
---         downFil = min(fila+1 nFilasColumnas)
-
 {-
-0 LEFT
-1 DOWN
-2 RIGHT
-3 UP
+Posibles movimientos
+0 izquierda
+1 abajo
+2 derecha
+3 arriba
 -}
 
--- no es seguro
 move :: Int -> Entorno -> Posicion
 move 0 (_, (n, 1)) = (n, 1)
 -- move 1 (tb, (x, n)) = (x, n)
@@ -139,11 +122,11 @@ move action (tb, (fila, columna)) = case action of
     _ -> (fila, columna)
 
 -- retorna info del entorno observation, reward, done, info
-step :: Action -> Posicion
-step action =  undefined
---iniciaEntorno :: Int -> (Tablero, Posicion)
+step :: Entorno -> Action -> (Entorno, Float, Bool, [t])
+step entorno action =  ((fst entorno, move action entorno), reward entorno, done entorno, [])
+
+iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
 -- devolvemos un tablero iniciado válido y el estado inicial en la meta
 iniciaEntorno n semilla = (crearTablero n semilla, (1, 1))
 
 muestra (tb, estado) = print (M.setElem 'X' estado tb)
-
