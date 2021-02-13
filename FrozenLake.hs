@@ -1,5 +1,5 @@
 module FrozenLake
-(iniciaEntorno, step, muestra) where
+(iniciaEntorno, step, muestra, iniciaTablero, getEntorno, getReward, getDone) where
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
@@ -27,8 +27,6 @@ type Tablero = Matrix Char
 type Posicion = (Int, Int)
 type Entorno = (Tablero, Posicion)
 type Action = Int
-
-getRandomNum = randomRIO (0, 1) :: IO Float -- usar asignando num <- getRandomNum
 
 obtenerNumAleatorio idx n = take n $ drop (idx*n) (randoms (mkStdGen 11) :: [Float])
 
@@ -72,7 +70,7 @@ tableroValidoAux tablero casillasPosibles descubiertos
         column = snd (cima casillasPosibles)
             
 
-pertenecePila :: (Eq a) => a -> Pila a -> Bool
+pertenecePila :: Posicion -> Pila (Int, Int) -> Bool
 pertenecePila y pila
     | esVacia pila = False
     | otherwise = y == c || (pertenecePila y d)
@@ -88,16 +86,17 @@ tableroValido tablero = tableroValidoAux tablero pilaInicial []
 
 observation = undefined
 -- +1 si llegamos a la meta, 0 en caso contrario
-
-reward :: Entorno -> Float
+reward :: Entorno -> Int
 reward (tb, (x, y)) = case meta of
-    'M' -> 1.0
+    'M' -> 1
+    'A' -> -1
     _ -> 0
     where meta = tb!(fromIntegral(x), fromIntegral(y))
 -- si llegamos a la meta hemos terminado con el entorno
 done :: Entorno -> Bool
 done (tb, (x, y)) = case meta of
     'M' -> True
+    'A' -> True
     _ -> False
     where meta = tb!(fromIntegral(x), fromIntegral(y))
 
@@ -122,11 +121,23 @@ move action (tb, (fila, columna)) = case action of
     _ -> (fila, columna)
 
 -- retorna info del entorno observation, reward, done, info
-step :: Entorno -> Action -> (Entorno, Float, Bool, [t])
-step entorno action =  ((fst entorno, move action entorno), reward entorno, done entorno, [])
+--step :: Entorno -> Action -> (Entorno, Float, Bool)
+step entorno action =  ((fst entorno, move action entorno), reward entorno, done entorno)
 
 iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
 -- devolvemos un tablero iniciado válido y el estado inicial en la meta
 iniciaEntorno n semilla = (crearTablero n semilla, (1, 1))
 
 muestra (tb, estado) = print (M.setElem 'X' estado tb)
+
+getEntorno (a, _, _) = a
+getReward (_, a, _) = a
+getDone (_, _, a) = a
+
+{-
+entorno = getEntorno (step entorno 2)
+resolver y devolver listas de pasos ?
+    Podemos resolver con el mismo DFS
+    o crear una busqueda con DFS con "euristica"
+hacer los steps de forma consecutiva
+-}
