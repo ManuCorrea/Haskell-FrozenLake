@@ -3,7 +3,6 @@ module FrozenLake
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
---import Data.Vector as V
 
 import I1M.Pila
 
@@ -97,10 +96,15 @@ tableroValido tablero = tableroValidoAux tablero pilaInicial []
 
 observation = undefined
 -- +1 si llegamos a la meta, 0 en caso contrario
-reward (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then 1.0 else 0
+reward (x, y) = case meta of
+    'M' -> 1.0
+    _ -> 0
+    where meta = tb!(fromIntegral(x), fromIntegral(y))
 -- si llegamos a la meta hemos terminado con el entorno
-done (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then True else False
-
+done (x, y) = case meta of
+    'M' -> True
+    _ -> False
+    where meta = tb!(fromIntegral(x), fromIntegral(y))
 
 -- FIXME error de tipos o hacer funcion a parte para comprobar si es válido
 
@@ -122,15 +126,15 @@ done (x, y) = if (tb!(fromIntegral(x), fromIntegral(y)) == 'M') then True else F
 -}
 
 -- no es seguro
--- move 0 (n, 1) = (n, 1)
--- -- move 1 (nFilasColumnas, n) = (nFilasColumnas, n)
--- -- move 2 (n, nFilasColumnas) = (n, nFilasColumnas)
--- move 3 (1, n) = (1, n)
-move :: Int -> Posicion -> Posicion
-move action (fila, columna) = case action of
+move :: Int -> Entorno -> Posicion
+move 0 (_, (n, 1)) = (n, 1)
+-- move 1 (tb, (x, n)) = (x, n)
+--     where x = nrows tb
+move 3 (_, (1, n)) = (1, n)
+move action (tb, (fila, columna)) = case action of
     0 -> (fila, columna-1)
-    1 -> (fila+1, columna)
-    2 -> (fila, columna+1)
+    1 -> (min (fila+1) (nrows tb), columna)
+    2 -> (fila, min (columna+1) (nrows tb))
     3 -> (fila-1, columna)
     _ -> (fila, columna)
 
