@@ -1,16 +1,16 @@
 2 Usos:
 ok funciones básicas de prelude y Data.List
 ok definir 2 funciones recursivas (iteraDirecciones, tableroValidoAux, pertenecePila)
-definir 2 funciones por patrones (iteraDirecciones)
+okdefinir 2 funciones por patrones (iteraDirecciones, move)
 ok 2 usos de guardas (iteraDirecciones, tableroValidoAux, pertenecePila)
-2 usos de case of
-2 usos de listas por comprensión (iniciaTablero)
-2 usos de orden superior 
-declaraciones de tipos para todas las funciones definidas 
-2 usos de evaluación perezosa
+ok 3 usos de case of (move, reward, done)
+~2 usos de listas por comprensión (iniciaTablero)
+ok 2 usos de orden superior (iteraDirecciones)
+ok declaraciones de tipos para todas las funciones definidas 
+~2 usos de evaluación perezosa(obtenerNumAleatorio)
 
-Un módulo (Pendiente de hacer)
+ok Un módulo (Pendiente de hacer)
 
-2 datos nuevos(Tablero)
+ok 2 datos nuevos(Tablero, Posicion, Entorno)
 
 ok 2 datos abstractos(Matrix y Pila)
