@@ -37,7 +37,7 @@ iniciaTablero n idx = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M
 
 --crearTablero :: Int -> Int -> Tablero
 crearTablero n idx
-    | tableroValido (iniciaTablero n idx) = ((iniciaTablero n idx), idx)
+    | tableroValido (iniciaTablero n idx) = iniciaTablero n idx
     | otherwise = crearTablero n (idx+1)
 
 --iteraDirecciones :: (Num a, Ord a, Num b, Num c, Num d) => Tablero -> [(a, a)] -> [(b, b)] -> c -> c -> [(d, d)]
