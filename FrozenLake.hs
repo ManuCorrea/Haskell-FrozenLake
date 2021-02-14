@@ -122,7 +122,8 @@ move action (tb, (fila, columna)) = case action of
 
 -- retorna info del entorno observation, reward, done, info
 --step :: Entorno -> Action -> (Entorno, Float, Bool)
-step entorno action =  ((fst entorno, move action entorno), reward entorno, done entorno)
+step entorno action =  (nuevoEntorno, reward nuevoEntorno, done nuevoEntorno)
+    where nuevoEntorno = (fst entorno, move action entorno)
 
 iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
 -- devolvemos un tablero iniciado válido y el estado inicial en la meta
