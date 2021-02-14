@@ -23,9 +23,7 @@ resuelveJuego entorno = resuelveJuegoAux entorno (rutaAOrdenes (obtenerCaminoVal
         tamano = nrows (fst entorno) 
 
 -- resuelveJuego (iniciaEntorno 5 123)
---resuelveJuego entorno (orden:ordenes) = resuelveJuegoAux
 
--- resuelveJuegoAux (iniciaEntorno 5 123) (rutaAOrdenes (obtenerCaminoValido fst((iniciaEntorno 5 123))) [])
 -- resuelveJuegoAux (iniciaEntorno 5 123) [1,2,2,1,1,1,2,2]
 -- Se le pasa entorno y la lista de acciones que han sido computadas en resuelveJuego
 resuelveJuegoAux :: Entorno -> [Accion] -> IO ()
@@ -35,15 +33,19 @@ resuelveJuegoAux entorno (orden:ordenes) = do
     let finalizado = (getFinalizado (paso entorno orden))
     if finalizado then
         do
+            lineaBlanco
+            print "El juego ha terminado"
+            lineaBlanco
             let reward = (getRecompensa (paso entorno orden))
             if (reward>0) then do
-                print "campeón has ganao ;)"
+                print "Has ganado ;)"
                 else do
                 resuelveJuegoAux entorno []
-                print "Perdedor te caiste"
+                print "Perdiste :("
         else do
-        print finalizado
-        resuelveJuegoAux (getTablero (paso entorno orden)) ordenes
+            lineaBlanco
+            print "Siguiente movimiento:"
+            resuelveJuegoAux (getTablero (paso entorno orden)) ordenes
 
 lineaBlanco :: IO ()
 lineaBlanco = do
