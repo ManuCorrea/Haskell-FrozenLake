@@ -8,7 +8,7 @@
 -- Universidad de Sevilla
 -- =====================================================================
 
-import Mapa
+import FrozenLake
 
 -- Función que agrega una línea en blanco
 lineaBlanco = do
@@ -19,12 +19,12 @@ frozenLake = do
     lineaBlanco
     putStrLn "Introduce el tamaño del tablero:"
     x <- getLine
-    putStrLn "Introduce un índice:"
+    putStrLn "Introduce una semilla:"
     y <- getLine
     let n = read x :: Int
     let idx = read y :: Int 
     lineaBlanco
-    crearTablero n idx
+    print (iniciaTablero n idx)
 
 
 
