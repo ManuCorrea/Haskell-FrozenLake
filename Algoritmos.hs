@@ -1,12 +1,13 @@
 module Algoritmos (    
-    camino, 
+    trazaDFS, 
     contiguos, 
-    filtro,
+    obtieneBifurcacion,
     rutaAOrdenes,
     obtenerCaminoValido
 ) where
 
 import FrozenLake
+import I1M.Pila
 
 lista = [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
 lista2 = [(1,1),(1,2),(1,3), (1,4), (1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
@@ -16,6 +17,8 @@ trazaDFS :: Tablero -> Posicion -> [Posicion]
 trazaDFS tablero posicion = trazaDFSAux tablero pilaInicial []
     where
         pilaInicial = apila posicion vacia
+
+-- trazaDFS ( fst (iniciaEntorno 5 123)) (snd (iniciaEntorno 5 123))
 
 --                        Tiene que devolver lista con ordenes
 trazaDFSAux :: Tablero -> Pila Posicion -> [Posicion] -> [Posicion]
@@ -29,18 +32,33 @@ trazaDFSAux tablero casillasPosibles descubiertos
         row = fst (cima casillasPosibles)
         column = snd (cima casillasPosibles)
 
--- quita los nodos sin salida de una trama DFS
-obtenerCaminoValido :: [(Int, Int)] -> [(Int, Int)]
+{- 
+Función que devuelve un camino correcto quitando las ramas que no tienen salida.
+ 
+Le pasamos como parámetros:
+    * listaDFS -> Listado de trazas DFS (incluyendo las posiciones que no acaban en solución)
+ 
+El resultado de la función es una lista de posiciones válidas.
+ 
+Para probar el método:
+iniciaEntorno 5 123
+-}
+--obtenerCaminoValido :: [(Int, Int)] -> [(Int, Int)]
 obtenerCaminoValido [] = []
-obtenerCaminoValido lista
-    | (camino lista []) == (init lista)  = lista
+obtenerCaminoValido listaDFS
+    | (camino listaDFS []) == (init listaDFS)  = listaDFS -- es contiguo hasta la meta
     | otherwise = obtenerCaminoValido caminoComputado
     where
-        caminoComputado = (takeWhile (/=head(filtro lista)) lista) ++ filtro lista  ++ (dropWhile (/=head(restante)) lista)
-        cam = camino lista []
-        restante = drop (length cam) lista
+        caminoComputado = (takeWhile (/=head(obtieneBifurcacion listaDFS)) listaDFS) ++ obtieneBifurcacion listaDFS  ++ (dropWhile (/=head(restante)) listaDFS)
+        cam = camino listaDFS []
+        restante = drop (length cam) listaDFS -- la lista borrando todos los contiguos
+
+-- obtenerCaminoValido [(1,1),(1,2),(1,3), (1,4), (1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
+-- [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,5),(5,5)]
 
 -- devuelve el camino hasta encontrar un "salto" en la traza de DFS
+
+
 camino :: [Posicion] -> [Posicion] -> [Posicion]
 camino [] _ = []
 camino (x:xs) cam
@@ -49,7 +67,9 @@ camino (x:xs) cam
     | otherwise = cam++[x] --
     where
         h = head xs
+-- camino  [(1,1),(1,2),(1,3), (1,4), (1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)] []
 
+-- Función que comprueba que dos posiciones son contiguas. No valen las diagonales.
 contiguos :: Posicion -> Posicion -> Bool
 contiguos a b
     | (abs (x1-x2)) == 1 && (abs (y1-y2)) == 0 = True
@@ -60,31 +80,33 @@ contiguos a b
         y1 = snd a
         x2 = fst b
         y2 = snd b
+{-
+contiguos (2,2) (2,2)
+False
+contiguos (2,2) (1,2)
+True
+contiguos (2,2) (1,1)
+False
+-}
 
---
--- (takeWhile (/=head(filtro lista)) lista) ++ filtro lista  ++ (dropWhile (/=head(restante)) lista)
-filtro :: [Posicion] -> [Posicion]
-filtro [] = []
-filtro lista = filtroAux cam restante (reverse busqueda)
+-- obtieneBifurcacion obtiene el nodo donde hay bifurcaciones
+obtieneBifurcacion :: [Posicion] -> [Posicion]
+obtieneBifurcacion [] = [] --                        de derecha a izq
+obtieneBifurcacion trazaDFS = obtieneBifurcacionAux cam restante (reverse busqueda)
     where
-        cam = camino lista []
-        restante = drop (length cam) lista
-        busqueda = take (length cam) lista
+        cam = camino trazaDFS [] -- hace el camino DE LAS CONTIGUAS
+        restante = drop (length cam) trazaDFS -- elimina todos los contiguos, PQ? porque le estamos pasando un camino en el que sabemos que hay corte
+        busqueda = take (length cam) trazaDFS 
 
-filtroAux :: [t] -> [Posicion] -> [Posicion] -> [Posicion]
-filtroAux [] [] [] = []
-filtroAux cam restante (x:lista) = if (contiguos (head restante) x) then [x] else filtroAux cam restante lista
-
--- --------------------------------------------
--- Si esto es true el camino de la izq es el correcto  
---1 (camino [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,5),(5,5)] []) == (init [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,5),(5,5)])    
-
---si no
--- Darte un nuevo camino(cuando le pasas algo con nodos rotos)
--- (takeWhile (/=head(filtro lista)) lista) ++ filtro lista  ++ (dropWhile (/=head(restante)) lista)
--- Lo que retorne de vuelve a comparar. asi hasta que 2 sea true
-
--- filter (contiguos head(restante)) (reverse lista)
+obtieneBifurcacionAux :: [t] -> [Posicion] -> [Posicion] -> [Posicion]
+obtieneBifurcacionAux [] [] [] = []
+obtieneBifurcacionAux cam restante (x:trazaDFS) = if (contiguos (head restante) x) then [x] else obtieneBifurcacionAux cam restante trazaDFS -- [x] es donde se va a juntar
+{-
+obtieneBifurcacion [(1,1),(1,2),(1,3),(1,4),(1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
+[(1,3)]
+obtieneBifurcacion [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
+[(4,4)]
+-}
 
 -- función que dado una ruta devuelve las órdenes necesarias para realizarla
 -- camino a ordenes | camino | acumulador
@@ -95,6 +117,10 @@ rutaAOrdenes (x:xs) cam
     | otherwise = rutaAOrdenes xs (cam++[traduceAInt x (head xs)])
     where
         h = head xs   
+{-
+rutaAOrdenes (obtenerCaminoValido [(1,1),(1,2),(1,3),(1,4),(1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]) []
+[2,2,1,2,1,1,2,1]
+-}
 
 -- Función que pasa las órdenes a texto, útil para hacer debug
 rutaAOrdenesTexto :: [Posicion] -> [[Char]] -> [[Char]]
@@ -104,6 +130,11 @@ rutaAOrdenesTexto (x:xs) cam
     | otherwise = rutaAOrdenesTexto xs (cam++[traduceATexto x (head xs)])
     where
         h = head xs
+
+{-
+rutaAOrdenesTexto (obtenerCaminoValido [(1,1),(1,2),(1,3),(1,4),(1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]) []
+["derecha","derecha","abajo","derecha","abajo","abajo","derecha","abajo"]
+-}
 
 {-
 Posibles movimientos
@@ -130,6 +161,13 @@ traduceATexto a b
         f2 = fst b
         c2 = snd b
 
+{-
+traduceATexto (1,1) (1,2)
+"derecha"
+traduceATexto (2,4) (1,4)
+"arriba"
+-}
+
 -- Función que dada dos posiciones devuelve la orden
 -- para pasar de la primera a la segunda
 traduceAInt :: Posicion -> Posicion -> Int
@@ -144,3 +182,10 @@ traduceAInt a b
         c1 = snd a
         f2 = fst b
         c2 = snd b
+
+{-
+traduceAInt  (2,4) (1,4)
+3
+traduceAInt  (1,1) (1,2)
+2
+-}
