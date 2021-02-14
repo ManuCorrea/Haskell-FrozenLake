@@ -1,5 +1,5 @@
 module FrozenLake
-(iniciaEntorno, step, muestra, iniciaTablero, getTablero, getRecompensa, getFinalizado, Tablero, Posicion, Entorno, Action) where
+(iniciaEntorno, paso, muestra, iniciaTablero, getTablero, getRecompensa, getFinalizado, Tablero, Posicion, Entorno, Accion) where
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
@@ -26,7 +26,7 @@ En la cuadrícula vamos a tener:
 type Tablero = Matrix Char
 type Posicion = (Int, Int)
 type Entorno = (Tablero, Posicion)
-type Action = Int
+type Accion = Int
 
 -- tupla de direcciones posibles
 direcciones = [(1, 0), (0, 1), (-1, 0), (0, -1)]
@@ -39,6 +39,7 @@ direcciones = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 -- n=Tamaño de la matrix cuadrada, semilla numero entero para generar numeros aleatorios
 iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
 iniciaEntorno n semilla = (crearTablero n semilla, (1, 1))
+-- iniciaEntorno 5 123
 
 -- Función auxiliar que nos devuelve un tablero válido (que tiene solución)
 -- n=Tamaño de la matrix cuadrada, semilla numero entero para generar numeros aleatorios
@@ -53,12 +54,13 @@ crearTablero n semilla
 -- Con un 70% de probabilidad casilla agujero/ 30% casilla transitable
 iniciaTablero :: Int -> Int -> Tablero
 iniciaTablero n semilla = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.3) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio semilla (n*n))]
+-- iniciaTablero 5 123
 
 -- Función auxiliar que nos devuelve un número aleatorio entre 0 y 1
 -- semilla = semilla dada, n = cantidad de números aleatorios que quieres
 obtenerNumAleatorio :: Int -> Int -> [Float]
 obtenerNumAleatorio semilla n = take n $ drop (semilla*n) (randoms (mkStdGen 11) :: [Float])
-
+-- obtenerNumAleatorio 1000 4 -> Obtiene 4 números con la "semilla"
 
 {- 
 Función que nos dice si un tablero generado es válido (que tiene solución).
@@ -70,6 +72,8 @@ tableroValido :: Tablero -> Bool
 tableroValido tablero = tableroValidoAux tablero pilaInicial []
     where
         pilaInicial = apila (1,1) vacia
+-- tableroValido $ iniciaTablero 5 110 -> True
+-- tableroValido $ iniciaTablero 5 123 -> False
 
 {- 
 Función auxiliar que nos dice si un tablero generado es válido (que tiene solución).
@@ -113,6 +117,7 @@ iteraDirecciones tablero casillasPosibles (dir:direccioness) posActual
                  (fst newPos) > size ||
                  (snd newPos) < 1 ||
                  (snd newPos) > size
+-- iteraDirecciones (iniciaTablero 5 123) (vacia) direcciones (1,1)                 
             
 
 -- Función para comprobar si una posición está en una pila de posiciones.
@@ -122,6 +127,8 @@ posEnPila pos pilaPosiciones
     | otherwise = pos == c || (posEnPila pos d)
     where c = cima pilaPosiciones
           d = desapila pilaPosiciones
+-- posEnPila (1,1) vacia -> False
+-- posEnPila (1,1) (apila (1,1) vacia) -> True
 
 ----------------------------------------------------------------------
 ------------     Funciones "Privadas" Interacción Entorno    ------------
@@ -135,6 +142,9 @@ recompensa (tb, (x, y)) = case meta of
     'A' -> -1
     _ -> 0
     where meta = tb!(fromIntegral(x), fromIntegral(y))
+-- recompensa (iniciaEntorno 5 123) -> 0
+-- recompensa ((iniciaTablero 5 123), (5,5)) -> 1
+-- recompensa ((iniciaTablero 5 123), (2,1)) -> -1
 
 -- Función que indica si llegamos a la meta o caemos en casilla agujero hemos terminado con el entorno
 -- recibe entorno
@@ -144,6 +154,9 @@ finalizado (tb, (x, y)) = case meta of
     'A' -> True
     _ -> False
     where meta = tb!(fromIntegral(x), fromIntegral(y))
+-- finalizado (iniciaEntorno 5 123) -> False
+-- finalizado ((iniciaTablero 5 123), (5,5)) -> True
+-- finalizado ((iniciaTablero 5 123), (2,1)) -> True
 
 {-
 Función que devuelve una posición tras aplicar una acción.
@@ -155,38 +168,50 @@ Posibles movimientos:
 move :: Int -> Entorno -> Posicion
 move 0 (_, (n, 1)) = (n, 1)
 move 3 (_, (1, n)) = (1, n)
-move action (tb, (fila, columna)) = case action of
+move accion (tb, (fila, columna)) = case accion of
     0 -> (fila, columna-1)
     1 -> (min (fila+1) (nrows tb), columna)
     2 -> (fila, min (columna+1) (nrows tb))
     3 -> (fila-1, columna)
     _ -> (fila, columna)
-
+{-
+move 0 ((iniciaTablero 5 123), (2,2))
+(2,1)
+move 1 ((iniciaTablero 5 123), (2,2))
+(3,2)
+move 2 ((iniciaTablero 5 123), (2,2))
+(2,3)
+move 3 ((iniciaTablero 5 123), (2,2))
+(1,2)
+-}
 ----------------------------------------------------------------------
 ------------     Funciones "Públicas" Interacción Entorno      -------
 ----------------------------------------------------------------------
 -- Son las que el usuario va a usar para comunicarse con el entorno
 
--- retorna info del entorno observation, recompensa, finalizado, info
---step :: Entorno -> Action -> (Entorno, Float, Bool)
-step entorno action =  (nuevoEntorno, recompensa nuevoEntorno, finalizado nuevoEntorno)
-    where nuevoEntorno = (fst entorno, move action entorno)
+-- retorna entornoComputado, recompensa, finalizado
+paso :: Entorno -> Accion -> (Entorno, Int, Bool)
+paso entorno accion =  (nuevoEntorno, recompensa nuevoEntorno, finalizado nuevoEntorno)
+    where nuevoEntorno = (fst entorno, move accion entorno)
+-- paso (iniciaEntorno  5 123) 1 -- paso hacia abajo
+-- paso (iniciaEntorno  5 123) 2 -- paso hacia derecha
 
 -- Función usada para imprimir el tablero (matriz indicando con X la posición actual)
 muestra (tb, estado) = print (M.setElem 'X' estado tb)
+-- muestra (iniciaEntorno  5 123)
+-- muestra $ getTablero (paso (iniciaEntorno  5 123) 1)
 
-
------   Funciones sobre la información retornada por step, para extraer la información de la acción realizada     -----
+-----   Funciones sobre la información retornada por paso, para extraer la información de la acción realizada     -----
 -- Se usa para obtener el tablero al aplicar una acción
 getTablero (a, _, _) = a
 
 -- Se usa para obtener la recompensa al aplicar una acción al entorno
--- getRecompensa (step (iniciaEntorno  5 123) 1) -> 0
--- getRecompensa (step (iniciaEntorno  5 123) 2) -> 1
 getRecompensa (_, a, _) = a
+-- getRecompensa (paso (iniciaEntorno  5 123) 1) -> 0
+-- getRecompensa (paso (iniciaEntorno  5 123) 2) -> 1
 
 -- Se usa para saber si la acción aplicada hace que finalice el entorno
 -- El entorno finaliza si se mueve a un Agujero o llega a la Meta
--- getRecompensa (step (iniciaEntorno  5 123) 1) -> 0
--- getRecompensa (step (iniciaEntorno  5 123) 2) -> 1
 getFinalizado (_, _, a) = a
+-- getFinalizado $ (paso (iniciaEntorno  5 123) 1) -> False
+-- getFinalizado $ (paso (iniciaEntorno  5 123) 2) -> True
