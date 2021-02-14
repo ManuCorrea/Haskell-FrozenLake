@@ -1,8 +1,9 @@
 module FrozenLake (
-    iniciaEntorno, paso, muestra, iniciaTablero, 
-    getTablero, getRecompensa, getFinalizado,
+    iniciaEntorno, paso, muestra, iniciaTablero, direcciones, posEnPila, iteraDirecciones,
+    getTablero, getRecompensa, getFinalizado, 
     Tablero, Posicion, Entorno, Accion
 ) where
+
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
