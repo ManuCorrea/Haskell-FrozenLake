@@ -1,4 +1,4 @@
-module Algoritmos (    
+module Algoritmo (    
     trazaDFS, 
     contiguos, 
     obtieneBifurcacion,
