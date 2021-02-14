@@ -11,6 +11,24 @@ import FrozenLake
 lista = [(1,1),(1,2),(1,3),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
 lista2 = [(1,1),(1,2),(1,3), (1,4), (1,5),(2,3),(2,4),(3,4),(4,4),(4,3),(4,2),(5,2),(5,1),(4,5),(5,5)]
 
+-- traza DFS
+trazaDFS :: Tablero -> Posicion -> [Posicion]
+trazaDFS tablero posicion = trazaDFSAux tablero pilaInicial []
+    where
+        pilaInicial = apila posicion vacia
+
+--                        Tiene que devolver lista con ordenes
+trazaDFSAux :: Tablero -> Pila Posicion -> [Posicion] -> [Posicion]
+trazaDFSAux tablero casillasPosibles descubiertos
+    | esVacia casillasPosibles = []
+    | posEnPila (-1, -1) casillasPosibles = descubiertos
+    | not ((cima casillasPosibles) `elem` descubiertos) = trazaDFSAux
+                    tablero (iteraDirecciones tablero (desapila casillasPosibles) direcciones (row, column)) (descubiertos++[(cima casillasPosibles)]) -- for
+    | otherwise = trazaDFSAux tablero (desapila casillasPosibles) descubiertos
+    where
+        row = fst (cima casillasPosibles)
+        column = snd (cima casillasPosibles)
+
 -- quita los nodos sin salida de una trama DFS
 obtenerCaminoValido :: [(Int, Int)] -> [(Int, Int)]
 obtenerCaminoValido [] = []
