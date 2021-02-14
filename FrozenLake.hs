@@ -1,5 +1,5 @@
 module FrozenLake
-(iniciaEntorno, step, muestra, iniciaTablero, getEntorno, getReward, getDone) where
+(iniciaEntorno, step, muestra, iniciaTablero, getTablero, getRecompensa, getFinalizado, Tablero, Posicion, Entorno, Action) where
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
@@ -28,25 +28,84 @@ type Posicion = (Int, Int)
 type Entorno = (Tablero, Posicion)
 type Action = Int
 
-obtenerNumAleatorio idx n = take n $ drop (idx*n) (randoms (mkStdGen 11) :: [Float])
+-- tupla de direcciones posibles
+direcciones = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-iniciaTablero :: Int -> Int -> Tablero
-iniciaTablero n idx = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.3) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio idx (n*n))]
+----------------------------------------------------------------------
+------------     Funciones Creación Entorno         ------------------
+----------------------------------------------------------------------
 
+-- Función principal que devuelve un entorno válido y el estado inicial en la salida (1,1)
+-- n=Tamaño de la matrix cuadrada, semilla numero entero para generar numeros aleatorios
+iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
+iniciaEntorno n semilla = (crearTablero n semilla, (1, 1))
+
+-- Función auxiliar que nos devuelve un tablero válido (que tiene solución)
+-- n=Tamaño de la matrix cuadrada, semilla numero entero para generar numeros aleatorios
 crearTablero :: Int -> Int -> Tablero
-crearTablero n idx
-    | tableroValido (iniciaTablero n idx) = iniciaTablero n idx
-    | otherwise = crearTablero n (idx+1)
+crearTablero n semilla
+    | tableroValido (iniciaTablero n semilla) = iniciaTablero n semilla
+    | otherwise = crearTablero n (semilla+1)
 
+
+-- Función auxiliar que nos devuelve un tablero aleatorio
+-- n=Tamaño de la matrix cuadrada, semilla numero entero para generar numeros aleatorios
+-- Con un 70% de probabilidad casilla agujero/ 30% casilla transitable
+iniciaTablero :: Int -> Int -> Tablero
+iniciaTablero n semilla = M.fromList n n [if (y==1) then 'S' else if (y==n*n)then 'M' else (if (x>0.3) then 'A' else 'H') | (y,x) <- zip [1..(n*n)] (obtenerNumAleatorio semilla (n*n))]
+
+-- Función auxiliar que nos devuelve un número aleatorio entre 0 y 1
+-- semilla = semilla dada, n = cantidad de números aleatorios que quieres
+obtenerNumAleatorio :: Int -> Int -> [Float]
+obtenerNumAleatorio semilla n = take n $ drop (semilla*n) (randoms (mkStdGen 11) :: [Float])
+
+
+{- 
+Función que nos dice si un tablero generado es válido (que tiene solución).
+    * Un tablero cualesquiera. 
+El resultado de la función es True o False.
+-}
+
+tableroValido :: Tablero -> Bool
+tableroValido tablero = tableroValidoAux tablero pilaInicial []
+    where
+        pilaInicial = apila (1,1) vacia
+
+{- 
+Función auxiliar que nos dice si un tablero generado es válido (que tiene solución).
+ 
+Le pasamos como parámetros:
+    * Un tablero cualesquiera.
+    * Una pila vacía para almacenar movimientos.
+    * Una lista(acumulador) para almacenar las posiciones que ya hemos pasado.
+ 
+El resultado de la función es True o False.
+-}
+tableroValidoAux :: Tablero -> Pila Posicion -> [Posicion] -> Bool
+tableroValidoAux tablero casillasPosibles descubiertos
+    | esVacia casillasPosibles = False
+    | posEnPila (-1, -1) casillasPosibles = True
+    | not ((cima casillasPosibles) `elem` descubiertos) = tableroValidoAux
+                    tablero (iteraDirecciones tablero (desapila casillasPosibles) direcciones (row, column)) (descubiertos++[(cima casillasPosibles)]) -- for
+
+    | otherwise = tableroValidoAux tablero (desapila casillasPosibles) descubiertos
+    where
+        row = fst (cima casillasPosibles)
+        column = snd (cima casillasPosibles)
+
+
+{-
+Función auxiliar que añade a la pila una posición transitable
+En caso de llegar a la meta añade (-1,-1) indicando que ha finalizado correctamente.
+-}
 iteraDirecciones :: Tablero -> Pila (Int, Int) -> [(Int, Int)] -> (Int, Int) -> Pila (Int, Int)
--- hemos terminado el for sobre direcciones
 iteraDirecciones _ casillasPosibles [] _ = casillasPosibles --
 
-iteraDirecciones tablero casillasPosibles (dir:directionss) posActual
-    | fueraTablero = iteraDirecciones tablero casillasPosibles directionss posActual
-    | tablero!newPos == 'M' = apila (-1, -1) casillasPosibles --return True Mapa Valido
-    | tablero!newPos /= 'A'= iteraDirecciones tablero (apila newPos casillasPosibles) directionss posActual --frontier.append((r_new, c_new))
-    | otherwise = iteraDirecciones tablero casillasPosibles directionss posActual
+iteraDirecciones tablero casillasPosibles (dir:direccioness) posActual
+    | fueraTablero = iteraDirecciones tablero casillasPosibles direccioness posActual
+    | tablero!newPos == 'M' = apila (-1, -1) casillasPosibles
+    | tablero!newPos /= 'A'= iteraDirecciones tablero (apila newPos casillasPosibles) direccioness posActual
+    | otherwise = iteraDirecciones tablero casillasPosibles direccioness posActual
         where
             newPos = (sum(map fst [posActual, dir]), sum(map snd [posActual, dir]))
             size = nrows tablero
@@ -54,64 +113,47 @@ iteraDirecciones tablero casillasPosibles (dir:directionss) posActual
                  (fst newPos) > size ||
                  (snd newPos) < 1 ||
                  (snd newPos) > size
-
-directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-
-tableroValidoAux :: Tablero -> Pila Posicion -> [Posicion] -> Bool
-tableroValidoAux tablero casillasPosibles descubiertos
-    | esVacia casillasPosibles = False
-    | pertenecePila (-1, -1) casillasPosibles = True
-    | not ((cima casillasPosibles) `elem` descubiertos) = tableroValidoAux
-                    tablero (iteraDirecciones tablero (desapila casillasPosibles) directions (row, column)) (descubiertos++[(cima casillasPosibles)]) -- for
-
-    | otherwise = tableroValidoAux tablero (desapila casillasPosibles) descubiertos
-    where
-        row = fst (cima casillasPosibles)
-        column = snd (cima casillasPosibles)
             
 
-pertenecePila :: Posicion -> Pila (Int, Int) -> Bool
-pertenecePila y pila
-    | esVacia pila = False
-    | otherwise = y == c || (pertenecePila y d)
-    where c = cima pila
-          d = desapila pila
+-- Función para comprobar si una posición está en una pila de posiciones.
+posEnPila :: Posicion -> Pila (Int, Int) -> Bool
+posEnPila pos pilaPosiciones
+    | esVacia pilaPosiciones = False
+    | otherwise = pos == c || (posEnPila pos d)
+    where c = cima pilaPosiciones
+          d = desapila pilaPosiciones
 
+----------------------------------------------------------------------
+------------     Funciones "Privadas" Interacción Entorno    ------------
+----------------------------------------------------------------------
 
-tableroValido :: Tablero -> Bool
-                        --              tablero   posibles   descubiertos
-tableroValido tablero = tableroValidoAux tablero pilaInicial []
-    where
-        pilaInicial = apila (1,1) vacia
-
-observation = undefined
+-- Función para obtener la recompensa del entorno
 -- +1 si llegamos a la meta, 0 en caso contrario
-reward :: Entorno -> Int
-reward (tb, (x, y)) = case meta of
+recompensa :: Entorno -> Int
+recompensa (tb, (x, y)) = case meta of
     'M' -> 1
     'A' -> -1
     _ -> 0
     where meta = tb!(fromIntegral(x), fromIntegral(y))
--- si llegamos a la meta hemos terminado con el entorno
-done :: Entorno -> Bool
-done (tb, (x, y)) = case meta of
+
+-- Función que indica si llegamos a la meta o caemos en casilla agujero hemos terminado con el entorno
+-- recibe entorno
+finalizado :: Entorno -> Bool
+finalizado (tb, (x, y)) = case meta of
     'M' -> True
     'A' -> True
     _ -> False
     where meta = tb!(fromIntegral(x), fromIntegral(y))
 
 {-
-Posibles movimientos
-0 izquierda
-1 abajo
-2 derecha
-3 arriba
+Función que devuelve una posición tras aplicar una acción.
+Parámentros acción y entorno.
+Posibles movimientos:
+0 izquierda - 1 abajo - 2 derecha - 3 arriba
 -}
 
 move :: Int -> Entorno -> Posicion
 move 0 (_, (n, 1)) = (n, 1)
--- move 1 (tb, (x, n)) = (x, n)
---     where x = nrows tb
 move 3 (_, (1, n)) = (1, n)
 move action (tb, (fila, columna)) = case action of
     0 -> (fila, columna-1)
@@ -120,25 +162,31 @@ move action (tb, (fila, columna)) = case action of
     3 -> (fila-1, columna)
     _ -> (fila, columna)
 
--- retorna info del entorno observation, reward, done, info
+----------------------------------------------------------------------
+------------     Funciones "Públicas" Interacción Entorno      -------
+----------------------------------------------------------------------
+-- Son las que el usuario va a usar para comunicarse con el entorno
+
+-- retorna info del entorno observation, recompensa, finalizado, info
 --step :: Entorno -> Action -> (Entorno, Float, Bool)
-step entorno action =  (nuevoEntorno, reward nuevoEntorno, done nuevoEntorno)
+step entorno action =  (nuevoEntorno, recompensa nuevoEntorno, finalizado nuevoEntorno)
     where nuevoEntorno = (fst entorno, move action entorno)
 
-iniciaEntorno :: Int -> Int -> (Tablero, Posicion)
--- devolvemos un tablero iniciado válido y el estado inicial en la meta
-iniciaEntorno n semilla = (crearTablero n semilla, (1, 1))
-
+-- Función usada para imprimir el tablero (matriz indicando con X la posición actual)
 muestra (tb, estado) = print (M.setElem 'X' estado tb)
 
-getEntorno (a, _, _) = a
-getReward (_, a, _) = a
-getDone (_, _, a) = a
 
-{-
-entorno = getEntorno (step entorno 2)
-resolver y devolver listas de pasos ?
-    Podemos resolver con el mismo DFS
-    o crear una busqueda con DFS con "euristica"
-hacer los steps de forma consecutiva
--}
+-----   Funciones sobre la información retornada por step, para extraer la información de la acción realizada     -----
+-- Se usa para obtener el tablero al aplicar una acción
+getTablero (a, _, _) = a
+
+-- Se usa para obtener la recompensa al aplicar una acción al entorno
+-- getRecompensa (step (iniciaEntorno  5 123) 1) -> 0
+-- getRecompensa (step (iniciaEntorno  5 123) 2) -> 1
+getRecompensa (_, a, _) = a
+
+-- Se usa para saber si la acción aplicada hace que finalice el entorno
+-- El entorno finaliza si se mueve a un Agujero o llega a la Meta
+-- getRecompensa (step (iniciaEntorno  5 123) 1) -> 0
+-- getRecompensa (step (iniciaEntorno  5 123) 2) -> 1
+getFinalizado (_, _, a) = a
