@@ -7,8 +7,8 @@ module FrozenLake (
 
 import Data.Array as A hiding ((!))
 import Data.Matrix as M
---import I1M.Pila
-import PilaConTipoDeDatoAlgebraico
+import I1M.Pila
+--import PilaConTipoDeDatoAlgebraico
 import System.Random
 
 {-

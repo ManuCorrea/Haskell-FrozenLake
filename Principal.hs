@@ -8,8 +8,8 @@
 -- Universidad de Sevilla
 -- =====================================================================
 
---import I1M.Pila
-import PilaConTipoDeDatoAlgebraico
+import I1M.Pila
+--import PilaConTipoDeDatoAlgebraico
 import Data.Matrix as M
 
 import FrozenLake
@@ -30,6 +30,7 @@ resuelveJuego (iniciaEntorno 5 123)
 -}
 resuelveJuego :: Entorno -> IO ()
 resuelveJuego entorno = do 
+    lineaBlanco
     print "Empieza el juego:"
     muestra entorno
     lineaBlanco

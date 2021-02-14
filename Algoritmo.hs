@@ -7,8 +7,8 @@ module Algoritmo (
 ) where
 
 import FrozenLake
---import I1M.Pila
-import PilaConTipoDeDatoAlgebraico
+import I1M.Pila
+--import PilaConTipoDeDatoAlgebraico
 
 
 
