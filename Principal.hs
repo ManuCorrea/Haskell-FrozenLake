@@ -20,6 +20,7 @@ import I1M.Pila
 import Data.Matrix as M
 
 import FrozenLake
+import Intentos
 
 type Tablero = Matrix Char
 type Posicion = (Int, Int)
@@ -102,12 +103,15 @@ pertenecePila y pila
           d = desapila pila
 
 
+-- DFS
 resuelveTablero :: Tablero -> (Int, Int) -> [(Int, Int)]
                         --              tablero   posibles   descubiertos
 resuelveTablero tablero posicion = resuelveTableroAux tablero pilaInicial []
     where
         pilaInicial = apila posicion vacia
 
+--                                                          camino []
+-- aplicaOrdenesAux (iniciaEntorno 5 123) (caminoAOrdenes (obtenerCaminoValido fst((iniciaEntorno 5 123))) [])
 -- aplicaOrdenesAux (iniciaEntorno 5 123) [1,2,2,1,1,1,2,2]
 aplicaOrdenesAux entorno [] = lineaBlanco
 aplicaOrdenesAux entorno (orden:ordenes) = do
@@ -126,6 +130,13 @@ aplicaOrdenesAux entorno (orden:ordenes) = do
         print done
         aplicaOrdenesAux (getEntorno (step entorno orden)) ordenes
     
+aplicaOrdenes entorno = aplicaOrdenesAux entorno (caminoAOrdenes (obtenerCaminoValido (listaDFS ++ meta)) [])
+    where
+        listaDFS = resuelveTablero (fst entorno) (snd entorno)
+        meta = [(tamano, tamano)]
+        tamano = nrows (fst entorno) 
+
+
 --aplicaOrdenes entorno (orden:ordenes) = aplicaOrdenesAux
 
 
